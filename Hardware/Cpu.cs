@@ -456,7 +456,6 @@ public partial class Cpu
 
         HandleInterrupt();
 
-        //Unused = true;
         Logger.StartLine(cycleCount);
         Logger.State(this);
         var cyclesToAdd = Execute();

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Hardware/Hardware.csproj" />
+  <Project Path="UI/UI.csproj" />
+</Solution>

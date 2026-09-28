@@ -5,18 +5,18 @@ namespace Hardware;
 public class Cartridge
 {
     public IMapper Mapper { get; }
-    public Memory<byte> PrgRom { get; }
-    public Memory<byte> ChrRom { get; }
-    public Memory<byte> PrgRam { get; }
+    public byte[] PrgRom { get; }
+    public byte[] ChrRom { get; }
+    public byte[] PrgRam { get; }
 
     public bool Interrupt => Mapper.Interrupt;
     
     public Cartridge(IMapper mapper, byte[] prgMem, byte[] chrMem, byte[] prgRam)
     {
         Mapper = mapper;
-        PrgRom = prgMem.AsMemory();
-        ChrRom = chrMem.AsMemory();
-        PrgRam = prgRam.AsMemory();
+        PrgRom = prgMem;
+        ChrRom = chrMem;
+        PrgRam = prgRam;
     }
 
     public bool CpuRead(ushort address, out byte value)
@@ -31,7 +31,7 @@ public class Cartridge
             if (!Mapper.PrgRamEnabled)
                 return false;
 
-            value = PrgRam.Span[(address & 0x1FFF)];
+            value = PrgRam[(address & 0x1FFF)];
             return true;
         }
         
@@ -40,7 +40,7 @@ public class Cartridge
         var mappedAddress = Mapper.CpuRead(address);
         
         if (mappedAddress.HasValue)
-            value = PrgRom.Span[mappedAddress.Value];
+            value = PrgRom[mappedAddress.Value];
         
         return true;
     }
@@ -56,7 +56,7 @@ public class Cartridge
                 || !Mapper.PrgRamWriteAllowed)
                 return false;
 
-            PrgRam.Span[(address & 0x1FFF)] = value;
+            PrgRam[(address & 0x1FFF)] = value;
             return true;
         }
         
@@ -65,7 +65,7 @@ public class Cartridge
         var mappedAddress = Mapper.CpuWrite(address, value);
         
         if (mappedAddress.HasValue)
-            PrgRom.Span[mappedAddress.Value] = value;
+            PrgRom[mappedAddress.Value] = value;
         
         return true;
     }
@@ -74,7 +74,7 @@ public class Cartridge
     {
         if (Mapper.PpuRead(address, out var mappedAddress))
         {
-            value = ChrRom.Span[mappedAddress];
+            value = ChrRom[mappedAddress];
             return true;
         }
 
@@ -87,7 +87,7 @@ public class Cartridge
         if (!Mapper.PpuWrite(address, out var mappedAddress))
             return false;
         
-        ChrRom.Span[mappedAddress] = value;
+        ChrRom[mappedAddress] = value;
         return true;
     }
 }

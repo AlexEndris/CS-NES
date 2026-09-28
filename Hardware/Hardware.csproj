@@ -3,24 +3,12 @@
     <PropertyGroup>
         <LangVersion>11</LangVersion>
         <Nullable>enable</Nullable>
-        <TargetFramework>net9.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <Optimize>true</Optimize>
     </PropertyGroup>
-
+    
     <ItemGroup>
-      <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
-      <PackageReference Include="SmartFormat" Version="3.2.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Instructions - Copy\**" />
-      <Compile Remove="Cpu - Copy.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Remove="Instructions - Copy\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="Instructions - Copy\**" />
+      <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.5.1" />
+      <PackageReference Include="SmartFormat" Version="3.6.1" />
     </ItemGroup>
 </Project>

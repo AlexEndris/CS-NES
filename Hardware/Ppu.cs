@@ -211,24 +211,24 @@ public class Ppu
                 break;
         }
 
-        var (bgPixel, bgPalette) = RenderBackground();
-        var (fgPixel, fgPalette, fgPriority, spriteZero) = RenderForeground();
-
-        if (cycle <= 8)
-        {
-            if (!ShowBackgroundLeft)
-                bgPixel = 0;
-            if (!ShowSpriteLeft)
-                fgPixel = 0;
-        }
-        
-        var (pixel, palette) = ChoosePixel(bgPixel, fgPixel, fgPalette, bgPalette, fgPriority, spriteZero);
-
         if (cycle is > 0 and < 257
             && scanline is >= 0 and < 240)
         {
+            var (bgPixel, bgPalette) = RenderBackground();
+            var (fgPixel, fgPalette, fgPriority, spriteZero) = RenderForeground();
+
+            if (cycle <= 8)
+            {
+                if (!ShowBackgroundLeft)
+                    bgPixel = 0;
+                if (!ShowSpriteLeft)
+                    fgPixel = 0;
+            }
+
+            var (pixel, palette) = ChoosePixel(bgPixel, fgPixel, fgPalette, bgPalette, fgPriority, spriteZero);
+
             var colour = GetColourFromPalette(palette, pixel);
-            Buffer.SetPixel((ushort) (cycle - 1), (ushort) scanline, colour);
+            Buffer.SetPixel((ushort)(cycle - 1), (ushort)scanline, colour);
         }
 
         cycle++;
