@@ -1,4 +1,4 @@
-# Nes
+# CS-NES
 Some dabbling with C# and an NES Emulator
 
 The solution is set up with two projects. One for the main emulation code, the other mainly for displaying something on the screen using MonoGame
