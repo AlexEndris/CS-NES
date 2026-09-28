@@ -19,20 +19,18 @@ public class Nes : IResetable, IInsertable, IPixelBuffer
         Ppu = new Ppu(PpuBus, this);
         Apu = new Apu();
         CpuBus = new CpuBus(Ppu, Apu);
-        screen = new uint[Width * Height];
+        Pixels = new uint[Width * Height];
         Cpu = new Cpu(CpuBus);
     }
     
     public const int Width = 256;
     public const int Height = 240;
 
-    private Memory<uint> screen;
-
-    public uint[] Pixels => screen.ToArray();
+    public uint[] Pixels { get; private set; }
 
     public void SetPixel(ushort x, ushort y, uint colour)
     {
-        screen.Span[y * Width + x] = colour;
+        Pixels[y * Width + x] = colour;
     }
 
     private uint systemClock = 0;
