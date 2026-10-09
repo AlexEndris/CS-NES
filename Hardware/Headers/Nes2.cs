@@ -59,4 +59,20 @@ public struct Nes2
             return new ConsoleTypeConfig();
         }
     }
+    
+    public static implicit operator RomInfo(Nes2 nes2)
+    {
+        return new RomInfo
+        {
+            Format = HeaderFormat.INes,
+            MapperId = nes2.MapperId,
+            Submapper = 0,
+            FourScreen = nes2.Flags6.FourScreen,
+            HasBattery = nes2.Flags6.Battery,
+            PrgRomSize = nes2.PrgRomSize,
+            ChrRomSize = nes2.ChrRomSize,
+            PrgRamSize = nes2.PrgRamSize,
+            ChrRamSize = nes2.ChrRomSize == 0 ? 8 * 1024 : 0,
+        };
+    }
 }

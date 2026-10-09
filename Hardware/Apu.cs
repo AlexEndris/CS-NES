@@ -24,7 +24,7 @@ public class Apu
     
     private uint cycle;
     
-    private uint cpuClock = 1_789_773;
+    private const uint cpuClock = 1_789_773;
     private uint sampleRate = 48_000;
 
     private int bufferSize;
@@ -263,14 +263,17 @@ public class Apu
         cycle++;
     }
 
+    private double CyclesPerSample = cpuClock / 48_000.0;
+    private double sampleAccumulator;
+    
     private void Downsample(double sample)
     {
-        if (cycle < nextSampleAt)
+        sampleAccumulator += 1;
+        if (sampleAccumulator < CyclesPerSample)
             return;
-       
+
+        sampleAccumulator -= CyclesPerSample;
         sampleBuffer.Add(sample);
-        generatedSamples++;
-        nextSampleAt = (uint) (generatedSamples * ((float)cpuClock / sampleRate));
     }
 
     private readonly List<double> sampleBuffer;

@@ -9,7 +9,7 @@ public class Nes : IResetable, IInsertable, IPixelBuffer
     public Apu Apu { get; }
     public CpuBus CpuBus { get; }
     public Cpu Cpu { get; }
-    private Cartridge? Cartridge { get; set; }
+    public Cartridge? Cartridge { get; private set; }
 
     public byte[] Controllers => CpuBus.controllers;
     

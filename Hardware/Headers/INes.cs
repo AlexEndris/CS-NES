@@ -2,6 +2,8 @@
 
 namespace Hardware.Headers;
 
+using System.Net;
+
 [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi)]
 public struct INes
 {
@@ -26,4 +28,20 @@ public struct INes
     public int ChrRomSize => ChrRomBanks * 8 * 1024;
     public int PrgRamSize => (PrgRamBanks == 0 ? 1 : PrgRamBanks) * 8 * 1024;
     public ushort PrgRamBanks => (ushort)(InternalPrgRamBanks == 0 ? 1 : InternalPrgRamBanks);
+
+    public static implicit operator RomInfo(INes ines)
+    {
+        return new RomInfo
+        {
+            Format = HeaderFormat.INes,
+            MapperId = ines.MapperId,
+            Submapper = 0,
+            FourScreen = ines.Flags6.FourScreen,
+            HasBattery = ines.Flags6.Battery,
+            PrgRomSize = ines.PrgRomSize,
+            ChrRomSize = ines.ChrRomSize,
+            PrgRamSize = ines.PrgRamSize,
+            ChrRamSize = ines.ChrRomSize == 0 ? 8 * 1024 : 0,
+        };
+    }
 }

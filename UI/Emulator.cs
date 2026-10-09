@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework.Input;
 
 namespace UI
 {
+    using System.IO;
+    using System.IO.IsolatedStorage;
+
     public class Emulator : Game
     {
         private readonly GraphicsDeviceManager graphics;
@@ -34,7 +37,7 @@ namespace UI
             graphics = new GraphicsDeviceManager(this);
             TargetElapsedTime = TimeSpan.FromTicks((long) (TimeSpan.TicksPerSecond / 60.0988118623484));
             Content.RootDirectory = "Content";
-            IsDebugEnabled = true;
+            IsDebugEnabled = false;
         }
 
         public bool IsDebugEnabled { get; set; }
@@ -69,7 +72,6 @@ namespace UI
 
         private void InitializeTextures()
         {
-
             nesScreen = new Texture2D(GraphicsDevice, Nes.Width, Nes.Height);
             pattern1 = new Texture2D(GraphicsDevice, 256, 256);
             pattern2 = new Texture2D(GraphicsDevice, 256, 256);
@@ -85,6 +87,7 @@ namespace UI
             try
             {
                 sound = new DynamicSoundEffectInstance(48000, AudioChannels.Mono);
+                sound.Volume = 0.75f;
             }
             catch (Exception e)
             {
@@ -108,7 +111,8 @@ namespace UI
             
             //cart = Loader.LoadFromFile(@"..\..\..\metroid.nes"); // MMC1
             //cart = Loader.LoadFromFile(@"..\..\..\icarus.nes"); // MMC1
-            //cart = Loader.LoadFromFile(@"..\..\..\megaman2.nes"); // MMC1
+            cart = Loader.LoadFromFile(@"..\..\..\megaman2.nes"); // MMC1
+            //cart = Loader.LoadFromFile(@"..\..\..\zelda.nes"); // MMC3
             
             //cart = Loader.LoadFromFile(@"..\..\..\mario3.nes"); // MMC3
             //cart = Loader.LoadFromFile(@"..\..\..\megaman3.nes"); // MMC3
@@ -117,6 +121,7 @@ namespace UI
             //cart = PpuTestRoms();
 
             nes.Insert(cart);
+            LoadSaveGame();
         }
 
         private static Cartridge PpuTestRoms()
@@ -198,7 +203,61 @@ namespace UI
             advanceScanline = false;
             advanceFrame = false;
             advanceCycle = false;
+
+            if (nes.Cartridge?.StoreSaveGame ?? false)
+            {
+                StoreSaveGame();
+            }
+            
             base.Update(gameTime);
+        }
+
+        protected override void OnExiting(object sender, ExitingEventArgs args)
+        {
+            if (nes.Cartridge?.RomInfo.HasBattery ?? false)
+            {
+                StoreSaveGame();
+            }
+            
+            base.OnExiting(sender, args);
+        }
+
+        private void LoadSaveGame()
+        {
+            if (nes.Cartridge is null)
+                return;
+
+            if (!nes.Cartridge.RomInfo.HasBattery)
+                return;
+            
+            string saveGameFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CS-NES", $"{nes.Cartridge.RomInfo.RomName}.sav");
+
+            if (!Path.Exists(saveGameFile))
+                return;
+
+            var ram = File.ReadAllBytes(saveGameFile);
+            nes.Cartridge.LoadSaveGame(ram);
+        }
+        
+        private void StoreSaveGame()
+        {
+            if (nes.Cartridge is null)
+                return;
+
+            string saveGameFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CS-NES", $"{nes.Cartridge.RomInfo.RomName}.sav");
+
+            if (!Path.Exists(saveGameFile))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(saveGameFile));
+                File.Create(saveGameFile).Dispose();
+            }
+            
+            var tempFile = Path.GetTempFileName();
+            File.WriteAllBytes(tempFile, nes.Cartridge.PrgRam);
+            
+            File.Move(tempFile, saveGameFile, true);
+            
+            File.Delete(tempFile);
         }
 
         private void UpdateSound()
