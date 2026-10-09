@@ -24,18 +24,18 @@ public class Loader
             
             if (nes2.IsNes2)
             {
-                return LoadNes2(reader, nes2);
+                return LoadNes2(reader, nes2, Path.GetFileNameWithoutExtension(fileName));
             }
             
             handle = GCHandle.Alloc(headerBytes, GCHandleType.Pinned);
             var ines = Marshal.PtrToStructure<INes>(handle.AddrOfPinnedObject());
             handle.Free();
             
-            return LoadINes(reader, ines);
+            return LoadINes(reader, ines, Path.GetFileNameWithoutExtension(fileName));
         }
     }
 
-    private static Cartridge LoadINes(BinaryReader reader, INes header)
+    private static Cartridge LoadINes(BinaryReader reader, INes header, string romName)
     {
         var prgMem = reader.ReadBytes(header.PrgRomSize);
         var chrMem = header.ChrRomBanks == 0 ? new byte[8*1024] : reader.ReadBytes(header.ChrRomSize);
@@ -43,11 +43,12 @@ public class Loader
         var chrRamBanks = (ushort)(header.ChrRomBanks == 0 ? 1 : 0);
         
         var mapper = CreateMapper(header.MapperId, header.Flags6.Mirroring, header.PrgRomBanks, header.ChrRomBanks, header.PrgRamBanks, chrRamBanks);
-            
-        return new Cartridge(mapper, prgMem, chrMem, prgRam);
+        RomInfo romInfo = header;
+        romInfo.RomName = romName;
+        return new Cartridge(romInfo, mapper, prgMem, chrMem, prgRam);
     }
 
-    private static Cartridge LoadNes2(BinaryReader reader, Nes2 header)
+    private static Cartridge LoadNes2(BinaryReader reader, Nes2 header, string romName)
     {
         var prgMem = reader.ReadBytes(header.PrgRomSize);
         var chrMem = header.ChrRomBanks == 0 ? new byte[header.ChrRamSize] : reader.ReadBytes(header.ChrRomSize);
@@ -55,8 +56,9 @@ public class Loader
         var chrRamBanks = (ushort)(header.ChrRomBanks == 0 ? header.ChrRamSize / 0x2000 : 0);
 
         var mapper = CreateMapper(header.MapperId, header.Flags6.Mirroring, header.PrgRomBanks, header.ChrRomBanks, header.PrgRamBanks, chrRamBanks);
-            
-        return new Cartridge(mapper, prgMem, chrMem, prgRam);
+        RomInfo romInfo = header;
+        romInfo.RomName = romName;
+        return new Cartridge(romInfo, mapper, prgMem, chrMem, prgRam);
     }
 
     private static IMapper CreateMapper(ushort id, Mirroring mirroring, ushort prgBanks, ushort chrBanks, ushort prgRamBanks, ushort chrRamBanks)

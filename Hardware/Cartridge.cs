@@ -4,15 +4,34 @@ namespace Hardware;
 
 public class Cartridge
 {
+    public RomInfo RomInfo { get; }
+
     public IMapper Mapper { get; }
     public byte[] PrgRom { get; }
     public byte[] ChrRom { get; }
-    public byte[] PrgRam { get; }
+    public byte[] PrgRam { get; private set; }
 
     public bool Interrupt => Mapper.Interrupt;
+
+    private bool storeSaveGame;
     
-    public Cartridge(IMapper mapper, byte[] prgMem, byte[] chrMem, byte[] prgRam)
+    public  bool StoreSaveGame
     {
+        get
+        {
+            if (!storeSaveGame)
+                return false;
+            
+            storeSaveGame = false;
+            return true;
+        }
+    }
+
+    private bool loadedSaveGame;
+
+    public Cartridge(RomInfo romInfo, IMapper mapper, byte[] prgMem, byte[] chrMem, byte[] prgRam)
+    {
+        RomInfo = romInfo;
         Mapper = mapper;
         PrgRom = prgMem;
         ChrRom = chrMem;
@@ -57,6 +76,7 @@ public class Cartridge
                 return false;
 
             PrgRam[(address & 0x1FFF)] = value;
+            SetStoreSaveGame();
             return true;
         }
         
@@ -70,6 +90,21 @@ public class Cartridge
         return true;
     }
 
+    private void SetStoreSaveGame()
+    {
+        storeSaveGame = RomInfo.HasBattery;
+    }
+    
+    public void LoadSaveGame(byte[] ram)
+    {
+        if (!RomInfo.HasBattery
+            || loadedSaveGame)
+            return;
+        
+        PrgRam = ram;
+        loadedSaveGame = true;
+    }
+    
     public bool PpuRead(ushort address, out byte value)
     {
         if (Mapper.PpuRead(address, out var mappedAddress))
